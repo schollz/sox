@@ -95,8 +95,26 @@ func Clean() (err error) {
 	return
 }
 
+func PCM16(fname string) (fname2 string, err error) {
+	sr, c, _, err := Info(fname)
+	if err != nil {
+		return
+	}
+	rawfile := Tmpfile() + ".raw"
+	fname2 = Tmpfile()
+	_, _, err = run("sox", fname, "-c", fmt.Sprint(c), "-r", fmt.Sprint(sr), "-b", fmt.Sprint(16), "--encoding", "signed-integer", "--endian", "little", rawfile)
+	if err != nil {
+		return
+	}
+	_, _, err = run("sox", "-c", fmt.Sprint(c), "-r", fmt.Sprint(sr), "-b", fmt.Sprint(16), "--encoding", "signed-integer", "--endian", "little", rawfile, fname2)
+	if err != nil {
+		return
+	}
+	return
+}
+
 // Info returns the sample rate and number of channels for file
-func Info(fname string) (samplerate int, channels int, err error) {
+func Info(fname string) (samplerate int, channels int, precision int, err error) {
 	stdout, stderr, err := run("sox", "--i", fname)
 	if err != nil {
 		return
@@ -112,6 +130,14 @@ func Info(fname string) (samplerate int, channels int, err error) {
 		} else if strings.Contains(line, "Sample Rate") && samplerate == 0 {
 			parts := strings.Fields(line)
 			samplerate, err = strconv.Atoi(parts[len(parts)-1])
+			if err != nil {
+				return
+			}
+		} else if strings.Contains(line, "Precision") && precision == 0 {
+			parts := strings.Fields(line)
+			precisionPart := parts[len(parts)-1]
+			precisionPart2 := strings.Split(precisionPart, "-")
+			precision, err = strconv.Atoi(precisionPart2[0])
 			if err != nil {
 				return
 			}
@@ -139,7 +165,7 @@ func Length(fname string) (length float64, err error) {
 
 // SilenceAppend appends silence to a file
 func SilenceAppend(fname string, length float64) (fname2 string, err error) {
-	samplerate, channels, err := Info(fname)
+	samplerate, channels, _, err := Info(fname)
 	if err != nil {
 		return
 	}
@@ -166,7 +192,7 @@ func SilenceAppend(fname string, length float64) (fname2 string, err error) {
 
 // SilencePrepend prepends silence to a file
 func SilencePrepend(fname string, length float64) (fname2 string, err error) {
-	samplerate, channels, err := Info(fname)
+	samplerate, channels, _, err := Info(fname)
 	if err != nil {
 		return
 	}
@@ -213,6 +239,13 @@ func SilenceTrimEnd(fname string) (fname2 string, err error) {
 	return
 }
 
+// SilenceTrimFront trims silence from beginning of file
+func SilenceTrimFront(fname string) (fname2 string, err error) {
+	fname2 = Tmpfile()
+	_, _, err = run("sox", fname, fname2, "silence", "1", "0.1", `-50d`, "reverse")
+	return
+}
+
 // Trim will trim the audio from the start point (with optional length)
 func Trim(fname string, start float64, length ...float64) (fname2 string, err error) {
 	fname2 = Tmpfile()
@@ -242,6 +275,7 @@ func Pitch(fname string, notes int) (fname2 string, err error) {
 func Join(fnames ...string) (fname2 string, err error) {
 	fname2 = Tmpfile()
 	fnames = append(fnames, fname2)
+	fmt.Println(fnames)
 	_, _, err = run(append([]string{"sox"}, fnames...)...)
 	return
 }

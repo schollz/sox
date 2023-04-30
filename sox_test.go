@@ -6,9 +6,99 @@ import (
 	"strings"
 	"testing"
 
+	log "github.com/schollz/logger"
 	"github.com/stretchr/testify/assert"
 )
 
+// func TestQuantize(t *testing.T) {
+// 	fname := "amen_beats8_bpm172_2.wav"
+// 	fname = "TB_LOOPS_120BPM_2.wav"
+// 	fname2, err := Quantize(fname)
+// 	fmt.Println(fname2)
+// 	os.Rename(fname2, "test.wav")
+// 	assert.Nil(t, err)
+// }
+
+// func Quantize(fname string) (fname2 string, err error) {
+// 	fnameTrimmed, err := SilenceTrim(fname)
+// 	if err != nil {
+// 		return
+// 	}
+// 	beats, bpm, err := GetBPM(fname)
+// 	actual_length := MustFloat(Length(fnameTrimmed))
+// 	fmt.Println("beats,bpm", beats, bpm)
+// 	expected_length := beats * 60 / bpm
+// 	fmt.Println("exp,act", expected_length, actual_length)
+// 	if actual_length < expected_length {
+// 		fnameTrimmed, err = SilenceAppend(fnameTrimmed, expected_length-actual_length)
+// 		if err != nil {
+// 			return
+// 		}
+// 	}
+
+// 	fname2, err = PCM16(fnameTrimmed)
+// 	if err != nil {
+// 		return
+// 	}
+// 	stdout, _, err := run("aubioonset", fname2)
+// 	onsets := []float64{}
+// 	for _, line := range strings.Fields(stdout) {
+// 		num, errnum := strconv.ParseFloat(line, 64)
+// 		if errnum == nil {
+// 			onsets = append(onsets, num)
+// 		}
+// 	}
+// 	if len(onsets) == 1 {
+// 		err = fmt.Errorf("not enough onsets")
+// 		return
+// 	}
+// 	onsets = append(onsets, MustFloat(Length(fnameTrimmed)))
+// 	bpm_estimates := make([]float64, len(onsets)-1)
+// 	for i, _ := range bpm_estimates {
+// 		bpm_estimates[i] = 60 / (onsets[i+1] - onsets[i])
+// 		for {
+// 			if bpm_estimates[i] >= 100 {
+// 				break
+// 			}
+// 			bpm_estimates[i] = bpm_estimates[i] * 2
+// 		}
+// 		for {
+// 			if bpm_estimates[i] < 200 {
+// 				break
+// 			}
+// 			bpm_estimates[i] = bpm_estimates[i] / 2
+// 		}
+// 	}
+// 	fmt.Println(onsets)
+// 	fmt.Println(bpm_estimates)
+
+// 	pieces := make([]string, len(bpm_estimates))
+// 	for i, bpm_estimate := range bpm_estimates {
+// 		var piece string
+// 		piece, err = Trim(fname, onsets[i], onsets[i+1]-onsets[i])
+// 		if err != nil {
+// 			return
+// 		}
+// 		if math.Abs(bpm_estimate-bpm) < 10 {
+// 			piece, err = RetempoStretch(piece, bpm_estimate, bpm)
+// 			if err != nil {
+// 				return
+// 			}
+// 		}
+// 		pieces[i] = piece
+// 	}
+// 	fmt.Println(pieces)
+// 	fname2, err = Join(pieces...)
+// 	return
+// }
+
+func TestPCM16(t *testing.T) {
+	log.SetLevel("trace")
+	fname := "amen_beats8_bpm172.wav"
+	fname2, err := PCM16(fname)
+	os.Rename(fname2, "test.wav")
+	assert.Nil(t, err)
+}
 func TestPiko(t *testing.T) {
 	fname := "amen_beats8_bpm172.wav"
 	beats, bpm, err := GetBPM(fname)
@@ -40,10 +130,11 @@ func TestLength(t *testing.T) {
 }
 
 func TestInfo(t *testing.T) {
-	samplerate, channnels, err := Info("amen_beats8_bpm172.wav")
+	samplerate, channnels, precision, err := Info("amen_beats8_bpm172.wav")
 	assert.Nil(t, err)
 	assert.Equal(t, 44100, samplerate)
 	assert.Equal(t, 2, channnels)
+	assert.Equal(t, 24, precision)
 }
 
 func TestSilence(t *testing.T) {
