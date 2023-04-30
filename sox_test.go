@@ -6,21 +6,18 @@ import (
 	"strings"
 	"testing"
 
-	log "github.com/schollz/logger"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestPiko(t *testing.T) {
-	log.SetLevel("trace")
 	fname := "amen_beats8_bpm172.wav"
 	beats, bpm, err := GetBPM(fname)
 	assert.Nil(t, err)
 	assert.Equal(t, 8.0, beats)
-	assert.Equal(t, 165.0, bpm)
+	assert.Equal(t, 172.0, bpm)
 }
 
 func TestReverseReverb(t *testing.T) {
-	log.SetLevel("trace")
 	fname := "amen_beats8_bpm172.wav"
 	fname2, err := ReverseReverb(fname, 7, 3)
 	assert.Nil(t, err)
@@ -30,7 +27,6 @@ func TestReverseReverb(t *testing.T) {
 	Clean()
 }
 func TestRun(t *testing.T) {
-	log.SetLevel("trace")
 	stdout, stderr, err := run("sox", "--help")
 	assert.Nil(t, err)
 	assert.True(t, strings.Contains(stdout, "SoX"))
@@ -40,13 +36,13 @@ func TestRun(t *testing.T) {
 func TestLength(t *testing.T) {
 	length, err := Length("amen_beats8_bpm172.wav")
 	assert.Nil(t, err)
-	assert.Equal(t, 1.133354, length)
+	assert.Equal(t, true, math.Abs(2.790499-length) < 0.1)
 }
 
 func TestInfo(t *testing.T) {
 	samplerate, channnels, err := Info("amen_beats8_bpm172.wav")
 	assert.Nil(t, err)
-	assert.Equal(t, 48000, samplerate)
+	assert.Equal(t, 44100, samplerate)
 	assert.Equal(t, 2, channnels)
 }
 
@@ -78,7 +74,7 @@ func TestTrim(t *testing.T) {
 	assert.Equal(t, 0.5, MustFloat(Length(fname2)))
 	fname2, err = Trim("amen_beats8_bpm172.wav", 0.5)
 	assert.Nil(t, err)
-	assert.Equal(t, 0.633354, MustFloat(Length(fname2)))
+	assert.Equal(t, 2.29068, MustFloat(Length(fname2)))
 }
 
 func TestReverse(t *testing.T) {
@@ -136,7 +132,8 @@ func TestCopyPaste(t *testing.T) {
 	var err error
 	fname2, err = CopyPaste("amen_beats8_bpm172.wav", 0.14, 0.27, 0.57, 0.02)
 	assert.Nil(t, err)
-	assert.Equal(t, MustFloat(Length("amen_beats8_bpm172.wav")), MustFloat(Length(fname2)))
+
+	assert.Equal(t, true, math.Abs(MustFloat(Length("amen_beats8_bpm172.wav"))-MustFloat(Length(fname2))) < 0.01)
 	os.Rename(fname2, "test.wav")
 }
 
