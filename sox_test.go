@@ -1,6 +1,7 @@
 package sox
 
 import (
+	"fmt"
 	"math"
 	"os"
 	"strings"
@@ -91,6 +92,33 @@ import (
 // 	fname2, err = Join(pieces...)
 // 	return
 // }
+
+func TestTrimBeats(t *testing.T) {
+	fname := "CDS_bpm120_BB_120_DRUM_LOOP_CODY_NITE_BREAKBEAT.wav"
+	fname2, err := SilenceTrim(fname)
+	assert.Nil(t, err)
+	_, bpm, err := GetBPM(fname)
+	assert.Nil(t, err)
+	actualLength := MustFloat(Length(fname2))
+	beats := actualLength / (60 / bpm)
+	shouldLength := math.Round(beats) * (60 / bpm)
+	fmt.Printf("parsed beats: %2.3f at %2.3f bpm\n", beats, bpm)
+	fmt.Printf("actual length: %2.4fs, should length: %2.4fs\n", actualLength, shouldLength)
+	if actualLength > shouldLength {
+		// trim
+		fname2, err = Trim(fname2, 0, shouldLength)
+	} else {
+		// pad
+		fname2, err = SilenceAppend(fname2, shouldLength-actualLength)
+	}
+	assert.Nil(t, err)
+	actualLength = MustFloat(Length(fname2))
+	beats = actualLength / (60 / bpm)
+	shouldLength = math.Round(beats) * (60 / bpm)
+	fmt.Printf("actual length: %2.4fs, should length: %2.4fs\n", actualLength, shouldLength)
+
+	os.Rename(fname2, "test.wav")
+}
 
 func TestPCM16(t *testing.T) {
 	log.SetLevel("trace")
