@@ -146,6 +146,26 @@ func Info(fname string) (samplerate int, channels int, precision int, err error)
 	return
 }
 
+// FadeIn will fade the audio in using quarter-sine wave
+func FadeIn(fname string, duration float64) (fname2 string, err error) {
+	fname2 = Tmpfile()
+	_, _, err = run("sox", fname, fname2, "fade", "q", fmt.Sprint(duration))
+	if err != nil {
+		return
+	}
+	return
+}
+
+// FadeOut will fade the audio out using quarter-sine wave
+func FadeOut(fname string, duration float64) (fname2 string, err error) {
+	fname2 = Tmpfile()
+	_, _, err = run("sox", fname, fname2, "fade", "q", "0", "-0", fmt.Sprint(duration))
+	if err != nil {
+		return
+	}
+	return
+}
+
 // Length returns the length of the file in seconds
 func Length(fname string) (length float64, err error) {
 	stdout, stderr, err := run("sox", fname, "-n", "stat")
@@ -621,6 +641,69 @@ func Stutter(fname string, stutter_length float64, pos_start float64, count floa
 		}
 		fname2 = fnameNext
 	}
+	return
+}
+
+// TrimBeats will take a filename with bpmX_beatsY.wav
+// and trim it and make sure its the correct lenght
+func TrimBeats(fname string) (fname2 string, err error) {
+	fname2, err = SilenceTrim(fname)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	_, bpm, err := GetBPM(fname)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	actualLength := MustFloat(Length(fname2))
+	beats := actualLength / (60 / bpm)
+	shouldLength := math.Round(beats) * (60 / bpm)
+	log.Debug(fname)
+	log.Debugf("parsed beats: %2.3f at %2.3f bpm", beats, bpm)
+	log.Debugf("actual length: %2.4fs", actualLength)
+	log.Debugf("should length: %2.4fs (%2.0f beats)", shouldLength, math.Round(beats))
+	if actualLength > shouldLength {
+		log.Debug("actualLength > shouldLength")
+		// trim
+		var p1, p2 string
+
+		p1, err = Trim(fname2, 0, shouldLength)
+		if err != nil {
+			log.Error(err)
+			return
+		}
+
+		p2, err = Trim(fname2, shouldLength)
+		if err != nil {
+			log.Error(err)
+			return
+		}
+		p2length := MustFloat(Length(p2))
+		p1, err = FadeIn(p1, p2length)
+		if err != nil {
+			log.Error(err)
+			return
+		}
+		p2, err = FadeOut(p2, p2length)
+		if err != nil {
+			log.Error(err)
+			return
+		}
+		fname2, err = Mix(p1, p2)
+		os.Remove(p1)
+		os.Remove(p2)
+	} else {
+		// pad
+		fname2, err = SilenceAppend(fname2, shouldLength-actualLength)
+	}
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	log.Debugf("newual length: %2.4fs", MustFloat(Length(fname2)))
+
 	return
 }
 
