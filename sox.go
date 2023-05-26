@@ -646,7 +646,7 @@ func Stutter(fname string, stutter_length float64, pos_start float64, count floa
 
 // TrimBeats will take a filename with bpmX_beatsY.wav
 // and trim it and make sure its the correct lenght
-func TrimBeats(fname string) (fname2 string, err error) {
+func TrimBeats(fname string) (fname2 string, tempo float64, beats float64, err error) {
 	fname2, err = SilenceTrim(fname)
 	if err != nil {
 		log.Error(err)
@@ -658,7 +658,7 @@ func TrimBeats(fname string) (fname2 string, err error) {
 		return
 	}
 	actualLength := MustFloat(Length(fname2))
-	beats := actualLength / (60 / bpm)
+	beats = actualLength / (60 / bpm)
 	shouldLength := math.Round(beats) * (60 / bpm)
 	log.Debug(fname)
 	log.Debugf("parsed beats: %2.3f at %2.3f bpm", beats, bpm)
@@ -703,6 +703,8 @@ func TrimBeats(fname string) (fname2 string, err error) {
 		return
 	}
 	log.Debugf("newual length: %2.4fs", MustFloat(Length(fname2)))
+	beats = math.Round(beats)
+	tempo = bpm
 
 	return
 }

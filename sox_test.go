@@ -97,7 +97,7 @@ func TestTrimBeats(t *testing.T) {
 	os.Remove("test.wav")
 	fnames, _ := filepath.Glob("*.wav")
 	for _, fname := range fnames {
-		fname2, err := TrimBeats(fname)
+		fname2, _, _, err := TrimBeats(fname)
 		assert.Nil(t, err)
 		os.Rename(fname2, "test.wav")
 	}
