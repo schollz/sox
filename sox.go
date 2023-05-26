@@ -664,7 +664,7 @@ func TrimBeats(fname string) (fname2 string, err error) {
 	log.Debugf("parsed beats: %2.3f at %2.3f bpm", beats, bpm)
 	log.Debugf("actual length: %2.4fs", actualLength)
 	log.Debugf("should length: %2.4fs (%2.0f beats)", shouldLength, math.Round(beats))
-	if actualLength > shouldLength {
+	if actualLength-shouldLength > 1e-4 {
 		log.Debug("actualLength > shouldLength")
 		// trim
 		var p1, p2 string
@@ -694,7 +694,7 @@ func TrimBeats(fname string) (fname2 string, err error) {
 		fname2, err = Mix(p1, p2)
 		os.Remove(p1)
 		os.Remove(p2)
-	} else {
+	} else if shouldLength-actualLength > 1e-4 {
 		// pad
 		fname2, err = SilenceAppend(fname2, shouldLength-actualLength)
 	}
