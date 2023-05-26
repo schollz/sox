@@ -806,6 +806,13 @@ func guessBPM(fname string) (beats float64, bpm float64, err error) {
 		return
 	}
 
+	multiple := 2.0
+	if os.Getenv("MULTIPLE") != "" {
+		multiple, _ = strconv.ParseFloat(os.Getenv("MULTIPLE"), 64)
+		if multiple == 0 {
+			multiple = 2.0
+		}
+	}
 	type guess struct {
 		diff, bpm, beats float64
 	}
@@ -813,7 +820,7 @@ func guessBPM(fname string) (beats float64, bpm float64, err error) {
 	i := 0
 	for beat := 1.0; beat < 34; beat++ {
 		for bp := 100.0; bp < 200; bp++ {
-			guesses[i] = guess{math.Abs(duration - beat*2*60.0/bp), bp, beat * 2}
+			guesses[i] = guess{math.Abs(duration - beat*multiple*60.0/bp), bp, beat * multiple}
 			i++
 		}
 	}

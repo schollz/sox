@@ -13,7 +13,7 @@ import (
 
 // func TestQuantize(t *testing.T) {
 // 	fname := "amen_beats8_bpm172_2.wav"
-// 	fname = "TB_LOOPS_120BPM_2.wav"
+// 	// fname = "TB_LOOPS_120BPM_2.wav"
 // 	fname2, err := Quantize(fname)
 // 	fmt.Println(fname2)
 // 	os.Rename(fname2, "test.wav")
