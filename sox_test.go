@@ -103,6 +103,14 @@ func TestTrimBeats(t *testing.T) {
 	}
 }
 
+func TestOnsets(t *testing.T) {
+	log.SetLevel("trace")
+	fname := "amen_beats8_bpm172.wav"
+	onsets, err := Onsets(fname)
+	log.Trace(onsets)
+	assert.Nil(t, err)
+}
+
 func TestPCM16(t *testing.T) {
 	log.SetLevel("trace")
 	fname := "amen_beats8_bpm172.wav"

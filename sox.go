@@ -146,6 +146,21 @@ func Info(fname string) (samplerate int, channels int, precision int, err error)
 	return
 }
 
+// Onsets requires aubioonset
+func Onsets(fname string) (onsets []float64, err error) {
+	stdout, stderr, err := run("aubioonset", "-i", fname)
+	if err != nil {
+		err = fmt.Errorf("err: %s: '%s'", err, stderr)
+	}
+	for _, line := range strings.Split(stdout, "\n") {
+		f, err2 := strconv.ParseFloat(line, 64)
+		if err2 == nil {
+			onsets = append(onsets, f)
+		}
+	}
+	return
+}
+
 // FadeIn will fade the audio in using quarter-sine wave
 func FadeIn(fname string, duration float64) (fname2 string, err error) {
 	fname2 = Tmpfile()
