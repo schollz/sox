@@ -105,6 +105,17 @@ func Left(fname string) (fname2 string, err error) {
 	return
 }
 
+// ResampleRate changes the sample rate and precision
+func ResampleRate(fname string, sampleRate int, precision int) (fname2 string, err error) {
+	fname2 = Tmpfile()
+	_, _, err = run("sox", fname, "-r", fmt.Sprint(sampleRate), "-b", fmt.Sprint(precision), "--encoding", "signed-integer", "--endian", "little", fname2)
+	if err != nil {
+		return
+	}
+	return
+
+}
+
 func PCM16(fname string) (fname2 string, err error) {
 	sr, c, _, err := Info(fname)
 	if err != nil {
