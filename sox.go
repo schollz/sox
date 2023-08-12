@@ -95,6 +95,16 @@ func Clean() (err error) {
 	return
 }
 
+// Left returns only the left channel
+func Left(fname string) (fname2 string, err error) {
+	fname2 = Tmpfile()
+	_, _, err = run("sox", fname, fname2, "remix", "1")
+	if err != nil {
+		return
+	}
+	return
+}
+
 func PCM16(fname string) (fname2 string, err error) {
 	sr, c, _, err := Info(fname)
 	if err != nil {
