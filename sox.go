@@ -790,6 +790,7 @@ func copy(src, dst string) (int64, error) {
 // BPM guessing
 
 func GetBPM(name string) (beats float64, bpm float64, err error) {
+	_, name = filepath.Split(name)
 	beats, bpm, err = parseName(name)
 	if err != nil {
 		beats, bpm, err = guessBPM(name)
