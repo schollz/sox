@@ -812,7 +812,7 @@ func parseName(name string) (beats float64, bpm float64, err error) {
 		err = fmt.Errorf("could not find bpm: %s", name)
 		for _, num := range rBPM2.FindAllString(fname, -1) {
 			bpm, err = strconv.ParseFloat(num, 64)
-			if err == nil && (bpm >= 100 && bpm <= 200) {
+			if err == nil && (bpm >= 100 && bpm <= 200 && math.Mod(bpm, 5) == 0) {
 				break
 			} else {
 				err = fmt.Errorf("no bpm detected")
